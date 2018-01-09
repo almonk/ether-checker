@@ -1,13 +1,8 @@
-      <head>
-      <title>Test</title>
-    </head>
 <template>
   <div>
-
     testetstest {{name}}
-    
-    
     {{bpi.USD.rate}}
+    {{bpi.GBP.rate}}
   </div>
 </template>
 
@@ -20,9 +15,6 @@ export default {
     .then((res) => {
       callback(null, { title: res.data.chartName, bpi: res.data.bpi })
     })
-  },
-  metaInfo: {
-    title: 'TEST'
   }
 }
 </script>
