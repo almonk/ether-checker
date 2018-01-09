@@ -1,8 +1,13 @@
+      <head>
+      <title>Test</title>
+    </head>
 <template>
   <div>
+
     testetstest {{name}}
     
-    {{title}}
+    
+    {{bpi.USD.rate}}
   </div>
 </template>
 
@@ -13,14 +18,11 @@ export default {
   asyncData ({ params }, callback) {
     axios.get(`https://api.coindesk.com/v1/bpi/currentprice.json`)
     .then((res) => {
-      callback(null, { title: res.data.chartName })
+      callback(null, { title: res.data.chartName, bpi: res.data.bpi })
     })
+  },
+  metaInfo: {
+    title: 'TEST'
   }
 }
 </script>
-
-<style scoped>
-  div {
-    font-size: 20px; 
-  }
-</style>
