@@ -4,6 +4,7 @@
     "start": "nuxt"
   },
   "dependencies": {
-    "nuxt": "^1.0.0-rc3"
+    "nuxt": "^1.0.0-rc3",
+    "axios": "^0.17.1"
   }
 }
