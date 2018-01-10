@@ -9,8 +9,10 @@ export default {
       name: req ? 'server' : 'client'
     }
   },
-  metaInfo: {
-    title: 'About us'
+  head () {
+    return {
+      title: "This is about us"
+    }
   }
 }
 </script>
