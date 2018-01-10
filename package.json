@@ -1,10 +1,10 @@
 {
   "name": "nuxt-hello",
   "scripts": {
-    "start": "nuxt --spa"
+    "start": "nuxt"
   },
   "dependencies": {
-    "nuxt": "^1.0.0",
+    "nuxt": "^1.0.0-rc3",
     "axios": "^0.17.1"
   }
 }
