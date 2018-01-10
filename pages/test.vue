@@ -4,7 +4,7 @@
     {{bpi.GBP.rate}}
   
     
-    <button v-on:click="getData" v-if="context.isClient">
+    <button v-on:click="getData" v-if="isClient">
       Refresh
     </button>
   </div>
