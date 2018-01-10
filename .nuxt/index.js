@@ -6,10 +6,12 @@ import NoSSR from './components/no-ssr.js'
 import NuxtChild from './components/nuxt-child.js'
 import NuxtLink from './components/nuxt-link.js'
 import NuxtError from './components/nuxt-error.vue'
-import Nuxt from './components/nuxt.vue'
-import App from './App.vue'
-import { getContext, getLocation } from './utils'
+import Nuxt from './components/nuxt.js'
+import App from './App.js'
+import { setContext, getLocation, getRouteData } from './utils'
 
+
+/* Plugins */
 
 
 // Component: <no-ssr>
@@ -45,7 +47,7 @@ async function createApp (ssrContext) {
   const app = {
     router,
     
-    _nuxt: {
+    nuxt: {
       defaultTransition,
       transitions: [ defaultTransition ],
       setTransitions (transitions) {
@@ -62,19 +64,20 @@ async function createApp (ssrContext) {
           }
           return transition
         })
-        this.$options._nuxt.transitions = transitions
+        this.$options.nuxt.transitions = transitions
         return transitions
       },
       err: null,
       dateErr: null,
       error (err) {
         err = err || null
-        if (typeof err === 'string') {
-          err = { statusCode: 500, message: err }
-        }
-        const _nuxt = this._nuxt || this.$options._nuxt
-        _nuxt.dateErr = Date.now()
-        _nuxt.err = err
+        app.context._errored = !!err
+        if (typeof err === 'string') err = { statusCode: 500, message: err }
+        const nuxt = this.nuxt || this.$options.nuxt
+        nuxt.dateErr = Date.now()
+        nuxt.err = err
+        // Used in lib/server.js
+        if (ssrContext) ssrContext.nuxt.error = err
         return err
       }
     },
@@ -82,6 +85,7 @@ async function createApp (ssrContext) {
   }
   
   const next = ssrContext ? ssrContext.next : location => app.router.push(location)
+  // Resolve route
   let route
   if (ssrContext) {
     route = router.resolve(ssrContext.url).route
@@ -89,17 +93,18 @@ async function createApp (ssrContext) {
     const path = getLocation(router.options.base)
     route = router.resolve(path).route
   }
-  const ctx = getContext({
-    isServer: !!ssrContext,
-    isClient: !ssrContext,
+
+  // Set context to app.context
+  await setContext(app, {
     route,
     next,
-    error: app._nuxt.error.bind(app),
+    error: app.nuxt.error.bind(app),
     
+    payload: ssrContext ? ssrContext.payload : undefined,
     req: ssrContext ? ssrContext.req : undefined,
     res: ssrContext ? ssrContext.res : undefined,
     beforeRenderFns: ssrContext ? ssrContext.beforeRenderFns : undefined
-  }, app)
+  })
 
   const inject = function (key, value) {
     if (!key) throw new Error('inject(key, value) has no key provided')
@@ -107,11 +112,13 @@ async function createApp (ssrContext) {
     key = '$' + key
     // Add into app
     app[key] = value
-    // Add into vm
+    
+    // Check if plugin not already installed
+    const installKey = '__nuxt_' + key + '_installed__'
+    if (Vue[installKey]) return
+    Vue[installKey] = true
+    // Call Vue.use() to install the plugin into vm
     Vue.use(() => {
-      const installKey = '__nuxt_' + key + '_installed__'
-      if (Vue[installKey]) return
-      Vue[installKey] = true
       if (!Vue.prototype.hasOwnProperty(key)) {
         Object.defineProperty(Vue.prototype, key, {
           get () {
@@ -120,17 +127,28 @@ async function createApp (ssrContext) {
         })
       }
     })
-    
   }
 
   
 
+  // Plugin execution
   
   
 
+  // If server-side, wait for async component to be resolved first
   if (process.server && ssrContext && ssrContext.url) {
     await new Promise((resolve, reject) => {
-      router.push(ssrContext.url, resolve, reject)
+      router.push(ssrContext.url, resolve, () => {
+        // navigated to a different route in router guard
+        const unregister = router.afterEach(async (to, from, next) => {
+          ssrContext.url = to.fullPath
+          app.context.route = await getRouteData(to)
+          app.context.params = to.params || {}
+          app.context.query = to.query || {}
+          unregister()
+          resolve()
+        })
+      })
     })
   }
 
