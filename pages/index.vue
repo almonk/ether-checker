@@ -41,7 +41,8 @@ export default {
     getData: function (event) {
       axios.get(`https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=GBP,USD`)
       .then((res) => {
-        this.bpi = res.data.bpi
+        this.usd = res.data.USD
+        this.gbp = res.data.GBP
       })
     }
   },
