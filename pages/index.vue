@@ -1,5 +1,5 @@
 <template>
-  <div id="canvas" class="bg-washed-red tc flex flex-column justify-center">
+  <div id="canvas" class="bg-washed-green tc flex flex-column justify-center">
     <p class="sans-serif mb2">1 ETH is worth&hellip;</p>
     <span class="f1 db code mb2">{{gbp | currency('GBP') }}</span>
     <span class="f1 db code">{{usd | currency('USD') }}</span>
