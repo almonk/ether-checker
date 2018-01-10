@@ -1,7 +1,7 @@
 {
   "name": "nuxt-hello",
   "scripts": {
-    "start": "nuxt"
+    "start": "npm run dev"
   },
   "dependencies": {
     "nuxt": "^1.0.0-rc3",
